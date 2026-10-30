@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Shell } from "@/views/components/shell";
 import { Toaster } from "sonner";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Phong Vũ Help Center | Chăm sóc laptop của bạn",
@@ -14,7 +15,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
       <body>
-        <Shell>{children}</Shell>
+        <Suspense
+          fallback={
+            <main className="container page-space panel empty" role="status">
+              Đang tải không gian của bạn…
+            </main>
+          }
+        >
+          <Shell>{children}</Shell>
+        </Suspense>
         <Toaster richColors position="top-right" />
       </body>
     </html>

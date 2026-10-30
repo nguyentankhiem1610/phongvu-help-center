@@ -29,7 +29,7 @@ views/components/    Thành phần giao diện và provider dữ liệu mẫu
 views/presenters/    Nhãn và định dạng
 views/preview/       Dữ liệu mẫu
 views/api/           Adapter để tích hợp backend sau
- types/              Kiểu dữ liệu
+types/               Kiểu dữ liệu
 public/              Ảnh, SVG, font và giấy phép font
 ```
 

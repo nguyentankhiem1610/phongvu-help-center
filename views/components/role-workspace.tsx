@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
@@ -77,7 +78,7 @@ export function RoleWorkspace({ children }: { children: React.ReactNode }) {
             href={userHome(user)}
             aria-label="Phong Vũ Help Center"
           >
-            <img src="/phongvu-logo.svg" alt="PHONG VŨ" />
+            <Image src="/phongvu-logo.svg" alt="PHONG VŨ" width={320} height={45} />
             <span>HELP CENTER</span>
           </Link>
           <span className="role-chip">

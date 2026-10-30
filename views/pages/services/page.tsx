@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Search,
   Fan,
@@ -13,10 +14,19 @@ import { services } from "@/views/presenters/catalog";
 import { money } from "@/views/presenters/format";
 const icons = [Fan, Wrench, Cpu, ShieldCheck];
 export default function Services() {
-  const [query, setQuery] = useState("");
-  useEffect(() => {
-    setQuery(new URLSearchParams(location.search).get("q") || "");
-  }, []);
+  return (
+    <Suspense fallback={<p className="container page-space">Đang tải dịch vụ…</p>}>
+      <ServicesQuery />
+    </Suspense>
+  );
+}
+function ServicesQuery() {
+  const params = useSearchParams();
+  const query = params.get("q") || "";
+  return <ServicesContent key={query} initialQuery={query} />;
+}
+function ServicesContent({ initialQuery }: { initialQuery: string }) {
+  const [query, setQuery] = useState(initialQuery);
   const list = services.filter((s) =>
     `${s.name} ${s.description}`
       .toLocaleLowerCase("vi")

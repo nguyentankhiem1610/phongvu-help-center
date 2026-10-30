@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { Snapshot, Profile } from "@/types/entities";
 import { seedDatabase } from "@/views/preview/sample-data";
 import { userHome } from "@/views/navigation";
@@ -29,10 +29,22 @@ const identities: Record<Exclude<PreviewRole, "guest">, string> = {
   technician: "demo-tech",
   application: "demo-applicant",
 };
+function initialRole(pathname: string): PreviewRole {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/dashboard"))
+    return "manager";
+  if (pathname.startsWith("/technician")) return "technician";
+  if (pathname.startsWith("/staff-application")) return "application";
+  return ["/customer", "/profile", "/account", "/booking", "/track"].some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  )
+    ? "customer"
+    : "guest";
+}
 export function AppProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [role, setRole] = useState<PreviewRole>("guest");
-  const [loading, setLoading] = useState(true);
+  const pathname = usePathname();
+  const [role, setRole] = useState<PreviewRole>(() => initialRole(pathname));
+  const loading = false;
   const [notice, setNotice] = useState("");
   const fixture = useMemo(() => {
     const source = seedDatabase();
@@ -100,23 +112,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ),
     };
   }, [fixture, user]);
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    setRole(
-      pathname.startsWith("/admin") || pathname.startsWith("/dashboard")
-        ? "manager"
-        : pathname.startsWith("/technician")
-          ? "technician"
-          : pathname.startsWith("/staff-application")
-            ? "application"
-            : ["/customer", "/profile", "/account", "/booking", "/track"].some(
-                  (p) => pathname.startsWith(p),
-                )
-              ? "customer"
-              : "guest",
-    );
-    setLoading(false);
-  }, []);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 4500);

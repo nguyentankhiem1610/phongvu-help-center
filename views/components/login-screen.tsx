@@ -1,6 +1,7 @@
 "use client";
 import { useState, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, ArrowRight } from "lucide-react";
 import { useApp } from "@/views/components/app-provider";
@@ -122,7 +123,7 @@ function LoginForm({
               ? "Đăng ký bằng email, xác nhận tài khoản và theo dõi quá trình chăm sóc thiết bị của bạn."
               : "Tạo tài khoản bằng email và mật khẩu để theo dõi quá trình chăm sóc thiết bị của bạn."}
         </p>
-        <img src="/laptop-care.svg" alt="Laptop được chăm sóc" />
+        <Image src="/laptop-care.svg" alt="Laptop được chăm sóc" width={700} height={480} style={{ height: "auto" }} />
         <div>
           <ShieldCheck size={20} /> Thông tin lịch hẹn chỉ hiển thị theo quyền
           truy cập.

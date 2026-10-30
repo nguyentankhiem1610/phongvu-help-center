@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Fan,
   Wrench,
@@ -80,9 +81,11 @@ export default function Home() {
               <CheckCircle2 size={14} /> Đăng ký trước · Tiếp nhận thuận tiện
             </div>
           </div>
-          <img
+          <Image
             className="hero-art"
             src="/laptop-care.svg"
+            width={700}
+            height={480}
             alt="Laptop được kiểm tra và bảo dưỡng, sẵn sàng hoạt động"
           />
           <div className="hero-bottom">

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useDialog } from "./use-dialog";
-import { X, Plus, Trash2, CheckCircle2, UserRound, Clock3 } from "lucide-react";
+import { X, Plus, Trash2 } from "lucide-react";
 import { useApp } from "./app-provider";
 import { appointmentLabels, ticketLabels } from "@/views/presenters/catalog";
 import { money, dateTime } from "@/views/presenters/format";

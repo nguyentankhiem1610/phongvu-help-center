@@ -3,7 +3,9 @@ import { useEffect, useRef } from "react";
 export function useDialog(onClose: () => void, active = true) {
   const ref = useRef<HTMLElement>(null);
   const close = useRef(onClose);
-  close.current = onClose;
+  useEffect(() => {
+    close.current = onClose;
+  }, [onClose]);
   useEffect(() => {
     if (!active) return;
     const element = ref.current;

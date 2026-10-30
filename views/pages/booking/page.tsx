@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   CalendarDays,
   MapPin,
@@ -13,8 +14,23 @@ import {
 import { useApp } from "@/views/components/app-provider";
 import { services } from "@/views/presenters/catalog";
 export default function Booking() {
+  return (
+    <Suspense
+      fallback={<p className="container page-space">Đang tải biểu mẫu đặt lịch…</p>}
+    >
+      <BookingQuery />
+    </Suspense>
+  );
+}
+function BookingQuery() {
+  const params = useSearchParams();
+  const value = params.get("service");
+  const service = services.find((item) => item.id === value)?.id || "cleaning";
+  return <BookingForm key={service} initialService={service} />;
+}
+function BookingForm({ initialService }: { initialService: string }) {
   const { data, loading, act, notify } = useApp();
-  const [service, setService] = useState("cleaning");
+  const [service, setService] = useState(initialService);
   const [day, setDay] = useState("");
   const [slot, setSlot] = useState("09:00");
   const [error, setError] = useState("");
@@ -22,17 +38,13 @@ export default function Booking() {
   const [code, setCode] = useState("");
   const [place, setPlace] = useState<"store" | "home">("store");
   const [address, setAddress] = useState(data.user?.address || "");
-  useEffect(() => {
-    setAddress(data.user?.address || "");
-  }, [data.user?.id]);
-  useEffect(() => {
-    const value = new URLSearchParams(location.search).get("service");
-    if (services.some((s) => s.id === value)) setService(value!);
-  }, []);
-  const today = new Date(Date.now() + 7 * 3600000).toISOString().slice(0, 10);
-  const max = new Date(Date.now() + 90 * 86400000 + 7 * 3600000)
-    .toISOString()
-    .slice(0, 10);
+  const [{ today, max }] = useState(() => {
+    const now = Date.now() + 7 * 3600000;
+    return {
+      today: new Date(now).toISOString().slice(0, 10),
+      max: new Date(now + 90 * 86400000).toISOString().slice(0, 10),
+    };
+  });
   const slots = Array.from(
     { length: 24 },
     (_, i) =>

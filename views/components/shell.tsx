@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Search,
   MapPin,
-  Phone,
   UserRound,
   CalendarDays,
   ArrowUpRight,
@@ -99,7 +99,7 @@ function Frame({ children }: { children: React.ReactNode }) {
       <header>
         <div className="container header-inner">
           <Link className="brand" href="/" aria-label="Phong Vũ Help Center">
-            <img src="/phongvu-logo.svg" alt="PHONG VŨ" />
+            <Image src="/phongvu-logo.svg" alt="PHONG VŨ" width={320} height={45} />
             <span>HELP CENTER</span>
           </Link>
           <form

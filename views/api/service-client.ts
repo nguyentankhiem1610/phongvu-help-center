@@ -4,6 +4,8 @@ export async function sendAction(
   _action: string,
   _payload: unknown = {},
 ): Promise<Response> {
+  void _action;
+  void _payload;
   throw new Error(
     "Bản giao diện chưa kết nối backend. Thao tác này chưa lưu dữ liệu.",
   );

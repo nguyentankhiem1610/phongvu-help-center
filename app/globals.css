@@ -231,6 +231,7 @@ header {
 }
 .brand img {
   width: 204px;
+  height: auto;
 }
 .brand > span {
   display: block;
@@ -532,6 +533,7 @@ header {
   color: #65d5d9;
 }
 .hero-art {
+  height: auto;
   position: absolute;
   right: -10px;
   bottom: 30px;
