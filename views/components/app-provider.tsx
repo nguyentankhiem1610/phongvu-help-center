@@ -1,7 +1,5 @@
 "use client";
 import {
-  createContext,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -10,19 +8,13 @@ import {
 import { usePathname, useRouter } from "next/navigation";
 import type { Snapshot, Profile } from "@/types/entities";
 import { seedDatabase } from "@/views/preview/sample-data";
-import { userHome } from "@/views/navigation";
+import { AppContext } from "./app-context";
+import { SupabaseProvider } from "./supabase-provider";
+import { hasSupabaseEnvironment } from "@/views/api/supabase-client";
+export { useApp } from "./app-context";
 
 type PreviewRole =
   "guest" | "customer" | "manager" | "technician" | "application";
-type Context = {
-  data: Snapshot;
-  loading: boolean;
-  error: string;
-  refresh: () => Promise<void>;
-  act: (action: string, payload?: unknown) => Promise<Record<string, unknown>>;
-  notify: (message: string) => void;
-};
-const AppContext = createContext<Context | null>(null);
 const identities: Record<Exclude<PreviewRole, "guest">, string> = {
   customer: "demo-customer",
   manager: "demo-manager",
@@ -41,6 +33,11 @@ function initialRole(pathname: string): PreviewRole {
     : "guest";
 }
 export function AppProvider({ children }: { children: ReactNode }) {
+  return hasSupabaseEnvironment
+    ? <SupabaseProvider>{children}</SupabaseProvider>
+    : <PreviewProvider>{children}</PreviewProvider>;
+}
+function PreviewProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [role, setRole] = useState<PreviewRole>(() => initialRole(pathname));
@@ -119,25 +116,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [notice]);
   async function act(
     action: string,
-    payload: unknown = {},
   ): Promise<Record<string, unknown>> {
     if (action === "logout") {
       setRole("guest");
       return { ok: true };
     }
     if (["login", "register", "staff_login"].includes(action)) {
-      const input = payload as { username?: string };
-      const nextRole =
-        action === "staff_login"
-          ? input.username?.toLowerCase().startsWith("technical")
-            ? "technician"
-            : "manager"
-          : "customer";
-      const target = fixture.profiles.find(
-        (p) => p.id === identities[nextRole],
-      )!;
-      setRole(nextRole);
-      return { ok: true, verification: false, redirectTo: userHome(target) };
+      throw new Error("Chưa cấu hình Supabase. Điền Project URL và Publishable key vào .env.local rồi khởi động lại npm run dev. Chế độ xem mẫu không tạo tài khoản.");
     }
     throw new Error(
       "Bản giao diện chỉ dùng dữ liệu mẫu. Thao tác này chưa lưu dữ liệu vì chưa kết nối backend.",
@@ -201,9 +186,4 @@ export function AppProvider({ children }: { children: ReactNode }) {
       )}
     </AppContext.Provider>
   );
-}
-export function useApp() {
-  const value = useContext(AppContext);
-  if (!value) throw new Error("Missing AppProvider");
-  return value;
 }

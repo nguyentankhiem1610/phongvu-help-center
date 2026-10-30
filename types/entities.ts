@@ -105,5 +105,5 @@ export type Database = {
 export type Snapshot = Database & {
   auth_provider?: "application" | "supabase";
   user: Profile | null;
-  mode: "frontend";
+  mode: "frontend" | "supabase";
 };

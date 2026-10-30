@@ -160,7 +160,7 @@ Bucket riêng tư cần RLS khi đọc/upload; xem [Storage access control](http
 
 ## Ánh xạ sang giao diện hiện tại
 
-Script tạo database; **chưa thay dữ liệu mẫu hay kết nối Supabase vào ứng dụng**. Khi nối backend, viết adapter trong `views/api/service-client.ts` và thay provider trong `views/components/app-provider.tsx`.
+Ứng dụng đã kết nối Supabase Auth và đọc dữ liệu qua `views/api/supabase-snapshot.ts` khi có cấu hình `.env.local`. Luồng đăng ký/đăng nhập và hồ sơ nằm trong `views/api/auth-actions.ts`. Các thao tác ghi nghiệp vụ ngoài tài khoản vẫn cần nối tới RPC bên trên; hiện chúng trả lỗi rõ ràng thay vì giả lập lưu thành công.
 
 | Database | Frontend hiện tại |
 | --- | --- |
@@ -177,7 +177,7 @@ Script tạo database; **chưa thay dữ liệu mẫu hay kết nối Supabase v
 | `service_events` | `events`; `repair_order_id → ticket_id`; `new_status → status` |
 | `technician_applications` | Trạng thái chuyển sang chữ thường; join `users` để lấy thông tin liên hệ |
 
-`Processing → processing`, `Pending_Approval → pending_approval`. Giao diện nhập từ ZIP chưa có bước duyệt báo giá và nhãn `pending_approval`; cần thêm bước/nút này khi tích hợp, không được bỏ qua để khớp giao diện cũ. ID kiểu bigint ở danh mục cần được chuyển nhất quán sang kiểu string nếu giữ nguyên kiểu dữ liệu UI hiện tại.
+`Processing → processing`, `Pending_Approval → pending_approval`. Adapter đã đổi trạng thái sang chữ thường và ID danh mục sang string. Giao diện có nhãn chờ duyệt báo giá; vẫn cần thêm bước/nút duyệt khi nối các thao tác ghi, không được bỏ qua quy tắc tại DB để khớp giao diện cũ.
 
 ## Kiểm tra đã thực hiện
 

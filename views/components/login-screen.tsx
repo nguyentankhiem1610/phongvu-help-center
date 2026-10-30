@@ -9,10 +9,8 @@ import { userHome } from "@/views/navigation";
 
 export function LoginScreen({
   staff = false,
-  legacyAuth = false,
 }: {
   staff?: boolean;
-  legacyAuth?: boolean;
 }) {
   return (
     <Suspense
@@ -22,19 +20,18 @@ export function LoginScreen({
         </div>
       }
     >
-      <LoginForm staff={staff} legacyAuth={legacyAuth} />
+      <LoginForm staff={staff} />
     </Suspense>
   );
 }
 
 function LoginForm({
   staff,
-  legacyAuth,
 }: {
   staff: boolean;
-  legacyAuth: boolean;
 }) {
   const { data, act, notify } = useApp();
+  const liveAuth = data.auth_provider === "supabase";
   const searchParams = useSearchParams();
   const isRegisterParam =
     !staff &&
@@ -52,9 +49,9 @@ function LoginForm({
     callback:
       "Liên kết đăng nhập/xác nhận không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập hoặc đăng ký lại.",
     profile:
-      "Đã xác thực nhưng chưa đọc được hồ sơ. Hãy chọn lại vai trò ở thanh xem giao diện.",
+      "Đã xác thực nhưng chưa đọc được hồ sơ. Kiểm tra bảng public.users và trigger Auth trên Supabase.",
     staff:
-      "Tài khoản nhân viên đăng nhập bằng tên tài khoản và mật khẩu được cấp.",
+      "Tài khoản nhân viên đăng nhập bằng email và mật khẩu được cấp.",
   };
   const [error, setError] = useState(
     authErrors[searchParams.get("auth_error") || ""] || "",
@@ -84,12 +81,13 @@ function LoginForm({
       );
       if (r.verification) {
         setConfirmation(
-          `Đã tạo tài khoản cho ${email}. Mở email xác nhận (kiểm tra cả thư rác), rồi đăng nhập để bắt đầu đặt lịch.`,
+          `Đã gửi yêu cầu đăng ký cho ${email}. Kiểm tra email xác nhận (kể cả thư rác), rồi đăng nhập. Nếu email này đã đăng ký, hãy dùng tài khoản hiện có hoặc khôi phục mật khẩu.`,
         );
         notify(
-          "Đăng ký thành công. Kiểm tra email để xác nhận, sau đó quay lại đăng nhập.",
+          "Kiểm tra email xác nhận, sau đó quay lại đăng nhập.",
         );
         setRegister(false);
+        setPassword("");
       } else {
         notify(
           register ? "Tạo tài khoản thành công." : "Đăng nhập thành công.",
@@ -119,7 +117,7 @@ function LoginForm({
         <p>
           {staff
             ? "Admin điều phối dịch vụ, kỹ thuật viên xử lý công việc được giao. Dùng tài khoản do chủ hệ thống cấp."
-            : legacyAuth
+            : liveAuth
               ? "Đăng ký bằng email, xác nhận tài khoản và theo dõi quá trình chăm sóc thiết bị của bạn."
               : "Tạo tài khoản bằng email và mật khẩu để theo dõi quá trình chăm sóc thiết bị của bạn."}
         </p>
@@ -132,8 +130,9 @@ function LoginForm({
       <section className="panel login-panel">
         <span className="overline">CHÀO MỪNG BẠN</span>
         <p className="notice">
-          Bản xem giao diện: biểu mẫu chỉ mở vai trò mẫu, không tạo hoặc xác
-          thực tài khoản.
+          {liveAuth
+            ? "Tài khoản được đăng ký và xác thực bằng Supabase. Nếu project yêu cầu xác nhận email, hãy xác nhận trước khi đăng nhập."
+            : "Chế độ xem giao diện chưa kết nối Supabase. Cần cấu hình kết nối để đăng ký hoặc đăng nhập tài khoản thật."}
         </p>
         {!staff && (
           <div
@@ -201,11 +200,11 @@ function LoginForm({
         </h2>
         <p className="soft-text">
           {staff
-            ? "Dùng tên đăng nhập và mật khẩu được cấp. Không cần email xác nhận."
+            ? "Dùng email và mật khẩu của tài khoản đã được cấp quyền nhân viên."
             : register
-              ? legacyAuth
+              ? liveAuth
                 ? "Nhập thông tin và xác nhận email để bắt đầu đặt lịch."
-                : "Có thể dùng email mẫu đúng định dạng. Không cần xác nhận email hay OTP."
+                : "Cấu hình Supabase trước khi tạo tài khoản."
               : "Tiếp tục hành trình chăm sóc thiết bị của bạn."}
         </p>
         {data.user && (
@@ -223,20 +222,6 @@ function LoginForm({
           <div className="notice" role="status">
             {confirmation}
           </div>
-        )}
-        {!staff && legacyAuth && (
-          <>
-            <a
-              className="button secondary full google-login"
-              href="/auth/google"
-            >
-              <span aria-hidden="true" className="google-letter">
-                G
-              </span>{" "}
-              Tiếp tục với Google
-            </a>
-            <div className="auth-divider">hoặc dùng email</div>
-          </>
         )}
         <form onSubmit={submit}>
           {register && (
@@ -266,16 +251,16 @@ function LoginForm({
             </>
           )}
           <label>
-            {staff ? "Tên đăng nhập" : "Email"}
+            Email
             <input
-              type={staff ? "text" : "email"}
+              type="email"
               required
-              autoComplete={staff ? "username" : "email"}
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={
                 staff
-                  ? "admin@gmail.com, technical01 hoặc technical02"
+                  ? "nhanvien@example.com"
                   : "email@example.com"
               }
             />
@@ -299,7 +284,7 @@ function LoginForm({
         </form>
         {!register && (
           <p className="switch-auth">
-            {legacyAuth ? (
+            {liveAuth ? (
               <Link href="/forgot-password">Quên mật khẩu?</Link>
             ) : (
               "Quên mật khẩu? Liên hệ chủ hệ thống để đặt lại."

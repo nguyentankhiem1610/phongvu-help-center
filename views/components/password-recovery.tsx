@@ -1,30 +1,25 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { sendAction } from "@/views/api/service-client";
+import { useApp } from "./app-provider";
 
 export function PasswordRecovery({
   reset = false,
-  tokenHash = "",
-  legacyAuth = false,
 }: {
   reset?: boolean;
-  tokenHash?: string;
-  legacyAuth?: boolean;
 }) {
+  const { data, act, loading } = useApp();
   const [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [message, setMessage] = useState("");
   const [done, setDone] = useState(false);
-  if (!legacyAuth)
+  if (data.auth_provider !== "supabase")
     return (
       <div className="container narrow page-space">
         <section className="panel">
           <h1>Khôi phục mật khẩu</h1>
           <p>
-            Ứng dụng đang dùng email và mật khẩu riêng, không gửi thư hay OTP.
-            Liên hệ chủ hệ thống để đặt lại mật khẩu. Nếu vẫn nhớ mật khẩu hiện
-            tại, bạn có thể đổi trong Hồ sơ cá nhân.
+            Cần cấu hình kết nối Supabase để gửi email khôi phục và đặt lại mật khẩu.
           </p>
           <Link href="/login">Quay lại đăng nhập</Link>
         </section>
@@ -41,15 +36,13 @@ export function PasswordRecovery({
     }
     setBusy(true);
     try {
-      const response = await sendAction(
+      const result = await act(
         reset ? "reset_password" : "forgot_password",
         reset
-          ? { token_hash: tokenHash, password: form.get("password") }
+          ? { password: form.get("password") }
           : { email: form.get("email") },
       );
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Không thể xử lý.");
-      setMessage(result.message);
+      setMessage(String(result.message));
       if (reset) setDone(true);
     } catch (error) {
       setError((error as Error).message);
@@ -76,15 +69,15 @@ export function PasswordRecovery({
             {message}
           </p>
         )}
-        {reset && !tokenHash ? (
-          <p role="alert">
-            Liên kết thiếu mã khôi phục.{" "}
-            <Link href="/forgot-password">Yêu cầu liên kết mới</Link>.
-          </p>
-        ) : done ? (
+        {done ? (
           <Link className="button" href="/login">
             Đăng nhập với mật khẩu mới
           </Link>
+        ) : reset && !data.user ? (
+          <p role="alert">
+            {loading ? "Đang xác nhận liên kết khôi phục…" : "Liên kết khôi phục không hợp lệ hoặc đã hết hạn."}{" "}
+            <Link href="/forgot-password">Yêu cầu liên kết mới</Link>.
+          </p>
         ) : (
           <form onSubmit={submit}>
             {reset ? (

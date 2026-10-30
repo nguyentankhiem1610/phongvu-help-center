@@ -31,11 +31,14 @@ function Frame({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [menu, setMenu] = useState(false);
+  const needsLogin = data.mode === "supabase" && ["/admin", "/customer", "/technician", "/profile", "/staff-application", "/dashboard", "/account", "/track"].some(
+    prefix => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
   const destination = data.user
     ? roleRedirect(pathname, data.user.role, data.user.technician_status)
-    : null;
+    : needsLogin ? "/login" : null;
   useEffect(() => {
-    if (!loading && destination) {
+    if (!loading && !error && destination) {
       // Preserve service selections from links on the public website.
       const query =
         pathname === "/booking" || pathname === "/services"
@@ -43,8 +46,8 @@ function Frame({ children }: { children: React.ReactNode }) {
           : "";
       router.replace(`${destination}${query}`);
     }
-  }, [loading, destination, pathname, router]);
-  if (loading || destination)
+  }, [loading, error, destination, pathname, router]);
+  if (loading || (destination && !error))
     return (
       <main
         id="main"
@@ -58,7 +61,7 @@ function Frame({ children }: { children: React.ReactNode }) {
     return (
       <main id="main" className="container page-space panel empty">
         <p role="alert">{error}</p>
-        <button className="button" onClick={() => void refresh()}>
+        <button className="button" onClick={() => void refresh().catch(() => {})}>
           Thử lại
         </button>
       </main>
