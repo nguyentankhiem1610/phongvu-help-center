@@ -11,6 +11,18 @@ npm run dev
 
 Mở http://localhost:3000. Không cần cấu hình `.env` hay tài khoản thật. Thanh chọn vai trò ở cuối màn hình cho phép xem giao diện công khai, khách hàng, Admin, kỹ thuật viên và hồ sơ kỹ thuật viên.
 
+## Cấu hình môi trường
+
+File [.env.example](.env.example) chứa cấu hình mẫu để chuẩn bị kết nối Supabase. Nếu chưa có `.env.local`, sao chép file mẫu thành `.env.local` ở thư mục gốc:
+
+```powershell
+Copy-Item .env.example .env.local
+```
+
+Điền `NEXT_PUBLIC_SUPABASE_URL` và `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` lấy từ **Connect** trong Supabase Dashboard, theo [hướng dẫn API keys](https://supabase.com/docs/guides/getting-started/api-keys). Khởi động lại `npm run dev` sau khi thay cấu hình.
+
+`.env.example` được lưu trên Git; `.env.local` được bỏ qua. Giao diện hiện vẫn dùng dữ liệu mẫu và chưa đọc các biến này; việc điền cấu hình chưa tự kết nối ứng dụng với Supabase.
+
 ## Các màn hình
 
 - Trang chủ, danh sách dịch vụ, đăng nhập/đăng ký và khôi phục mật khẩu.
@@ -34,6 +46,10 @@ public/              Ảnh, SVG, font và giấy phép font
 ```
 
 Để kết nối backend, thay phần dữ liệu và hành động trong `views/components/app-provider.tsx` và adapter `views/api/service-client.ts`.
+
+## Database Supabase
+
+Bộ khởi tạo database mới và dữ liệu mẫu nằm trong [supabase/setup.sql](supabase/setup.sql). Xem [hướng dẫn database](supabase/README.md) để chạy SQL, tạo tài khoản demo, cấp quyền và ánh xạ dữ liệu sang giao diện. Việc kết nối Supabase vào frontend chưa được triển khai.
 
 ## Kiểm tra
 
