@@ -38,7 +38,6 @@ function LoginForm({
     (searchParams.get("mode") === "register" ||
       searchParams.get("register") === "true");
   const [register, setRegister] = useState(isRegisterParam);
-  const [confirmation, setConfirmation] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const authErrors: Record<string, string> = {
@@ -62,7 +61,6 @@ function LoginForm({
     e.preventDefault();
     setBusy(true);
     setError("");
-    setConfirmation("");
     const form = new FormData(e.currentTarget);
     try {
       const r = await act(
@@ -72,31 +70,16 @@ function LoginForm({
           password,
           ...(register
             ? {
-                full_name: form.get("full_name"),
-                phone: form.get("phone"),
-                account_type: "customer",
-              }
+              full_name: form.get("full_name"),
+              phone: form.get("phone"),
+              account_type: "customer",
+            }
             : {}),
         },
       );
-      if (r.verification) {
-        setConfirmation(
-          `Đã gửi yêu cầu đăng ký cho ${email}. Kiểm tra email xác nhận (kể cả thư rác), rồi đăng nhập. Nếu email này đã đăng ký, hãy dùng tài khoản hiện có hoặc khôi phục mật khẩu.`,
-        );
-        notify(
-          "Kiểm tra email xác nhận, sau đó quay lại đăng nhập.",
-        );
-        setRegister(false);
-        setPassword("");
-      } else {
-        notify(
-          register ? "Tạo tài khoản thành công." : "Đăng nhập thành công.",
-        );
-        router.replace(
-          typeof r.redirectTo === "string" ? r.redirectTo : "/customer",
-        );
-        router.refresh();
-      }
+      notify(register ? "Tạo tài khoản thành công." : "Đăng nhập thành công.");
+      router.replace(typeof r.redirectTo === "string" ? r.redirectTo : "/customer");
+      router.refresh();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -117,11 +100,9 @@ function LoginForm({
         <p>
           {staff
             ? "Admin điều phối dịch vụ, kỹ thuật viên xử lý công việc được giao. Dùng tài khoản do chủ hệ thống cấp."
-            : liveAuth
-              ? "Đăng ký bằng email, xác nhận tài khoản và theo dõi quá trình chăm sóc thiết bị của bạn."
-              : "Tạo tài khoản bằng email và mật khẩu để theo dõi quá trình chăm sóc thiết bị của bạn."}
+            : "Tạo tài khoản bằng email và mật khẩu để theo dõi quá trình chăm sóc thiết bị của bạn."}
         </p>
-        <Image src="/laptop-care.svg" alt="Laptop được chăm sóc" width={700} height={480} style={{ height: "auto" }} />
+        <Image src="/laptop-care.svg" alt="Laptop được chăm sóc" width={700} height={480} style={{ height: "auto" }} priority />
         <div>
           <ShieldCheck size={20} /> Thông tin lịch hẹn chỉ hiển thị theo quyền
           truy cập.
@@ -131,7 +112,7 @@ function LoginForm({
         <span className="overline">CHÀO MỪNG BẠN</span>
         <p className="notice">
           {liveAuth
-            ? "Tài khoản được đăng ký và xác thực bằng Supabase. Nếu project yêu cầu xác nhận email, hãy xác nhận trước khi đăng nhập."
+            ? ""
             : "Chế độ xem giao diện chưa kết nối Supabase. Cần cấu hình kết nối để đăng ký hoặc đăng nhập tài khoản thật."}
         </p>
         {!staff && (
@@ -203,7 +184,7 @@ function LoginForm({
             ? "Dùng email và mật khẩu của tài khoản đã được cấp quyền nhân viên."
             : register
               ? liveAuth
-                ? "Nhập thông tin và xác nhận email để bắt đầu đặt lịch."
+                ? "Nhập thông tin để tạo tài khoản và bắt đầu sử dụng ngay."
                 : "Cấu hình Supabase trước khi tạo tài khoản."
               : "Tiếp tục hành trình chăm sóc thiết bị của bạn."}
         </p>
@@ -216,11 +197,6 @@ function LoginForm({
         {error && (
           <div className="error" role="alert">
             {error}
-          </div>
-        )}
-        {confirmation && (
-          <div className="notice" role="status">
-            {confirmation}
           </div>
         )}
         <form onSubmit={submit}>

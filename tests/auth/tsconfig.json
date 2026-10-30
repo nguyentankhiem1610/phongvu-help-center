@@ -7,7 +7,7 @@
     "noEmit": false,
     "incremental": false,
     "rootDir": "../..",
-    "outDir": "../../.next/auth-tests",
+    "outDir": "../../build/auth-tests",
     "plugins": []
   },
   "include": ["../../views/api/auth-actions.ts", "../../views/api/supabase-client.ts"],

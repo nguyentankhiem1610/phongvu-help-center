@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { getSupabaseClient } from "@/views/api/supabase-client";
+import { checkSignupSettings, getSupabaseClient } from "@/views/api/supabase-client";
 import { authError, performAuthAction } from "@/views/api/auth-actions";
 import { emptySnapshot, loadSupabaseSnapshot } from "@/views/api/supabase-snapshot";
 import { AppContext } from "./app-context";
@@ -55,6 +55,8 @@ export function SupabaseProvider({ children }: { children: ReactNode }) {
     authOperation.current = true;
     revision.current++;
     try {
+      // Kiem tra truoc signUp de khong tao tai khoan cho xac nhan/gui thu ngoai y muon.
+      if (action === "register") await checkSignupSettings();
       const result = await performAuthAction(getSupabaseClient(), action,
         payload as Record<string, unknown>, window.location.origin);
       await refresh();

@@ -34,3 +34,15 @@ export function getSupabaseClient(): SupabaseClient {
   });
   return client;
 }
+
+export async function checkSignupSettings(): Promise<void> {
+  getSupabaseClient();
+  const response = await fetch(new URL("/auth/v1/settings", url), {
+    headers: { apikey: key }, signal: AbortSignal.timeout(10000),
+  });
+  if (!response.ok) throw new Error("Không đọc được cấu hình đăng ký Supabase. Kiểm tra Project URL và Publishable key.");
+  const settings = await response.json();
+  if (settings.mailer_autoconfirm !== true) {
+    throw new Error("Project đang bật Confirm email. Tắt tại Supabase → Authentication → Sign In / Providers → Email → Confirm email, lưu rồi đăng ký lại.");
+  }
+}

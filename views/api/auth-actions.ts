@@ -6,12 +6,12 @@ export function authError(error: unknown): Error {
   const value = error as { code?: string; message?: string };
   const messages: Record<string, string> = {
     invalid_credentials: "Email hoặc mật khẩu không đúng.",
-    email_not_confirmed: "Bạn cần xác nhận email trước khi đăng nhập.",
+    email_not_confirmed: "Tài khoản chưa được xác nhận trên Supabase. Quản lý cần kiểm tra Confirm email và trạng thái tài khoản trong Authentication → Users.",
     user_already_exists: "Email đã đăng ký. Hãy đăng nhập hoặc khôi phục mật khẩu.",
     weak_password: "Mật khẩu chưa đáp ứng yêu cầu của Supabase.",
     signup_disabled: "Project Supabase đang tắt đăng ký tài khoản mới.",
     over_email_send_rate_limit: "Supabase đang giới hạn gửi email. Vui lòng thử lại sau.",
-    email_address_invalid: "Email không hợp lệ. Hãy dùng địa chỉ email có thể nhận thư.",
+    email_address_invalid: "Supabase từ chối địa chỉ email này. Kiểm tra định dạng hoặc dùng địa chỉ email khác.",
     unexpected_failure: "Supabase không tạo được tài khoản. Kiểm tra Auth Logs và trigger tạo public.users.",
   };
   if (value.code && messages[value.code]) return new Error(messages[value.code]);
@@ -56,10 +56,12 @@ export async function performAuthAction(
     }
     const { data, error } = await client.auth.signUp({
       email, password,
-      options: { data: { full_name: fullName, phone }, emailRedirectTo: `${origin}/login` },
+      options: { data: { full_name: fullName, phone } },
     });
     if (error) throw authError(error);
-    if (!data.session) return { ok: true, verification: true };
+    if (!data.session) {
+      throw new Error("Supabase chưa cấp phiên đăng nhập. Tắt Confirm email trong Authentication → Sign In / Providers → Email, lưu thiết lập rồi thử lại.");
+    }
     const profile = await loadProfile(client, data.session.user);
     return { ok: true, verification: false, redirectTo: userHome(profile) };
   }

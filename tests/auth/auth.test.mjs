@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
-import { performAuthAction, loadProfile } from '../../.next/auth-tests/views/api/auth-actions.js';
+import { performAuthAction, loadProfile } from '../../build/auth-tests/views/api/auth-actions.js';
 const requireConfig = createRequire(import.meta.url);
 
 const user = { id: '11111111-1111-4111-8111-111111111111', email: 'customer@example.test', user_metadata: {} };
@@ -40,7 +40,7 @@ function fixture(role = 'Customer') {
   return {client,state,calls};
 }
 
-test('SDK thật gửi POST signup đến Auth cùng metadata và URL xác nhận; không gửi role', async () => {
+test('SDK thật gửi metadata, không gửi role hay URL xác nhận; thiếu session thì không báo thành công', async () => {
   const requests = [];
   const client = createClient('https://auth-test.example.invalid','sb_publishable_test_key',{
     auth: {persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
@@ -51,8 +51,7 @@ test('SDK thật gửi POST signup đến Auth cùng metadata và URL xác nhậ
       });
     }},
   });
-  const result = await performAuthAction(client,'register',input,origin);
-  assert.equal(result.verification,true);
+  await assert.rejects(()=>performAuthAction(client,'register',input,origin),/Tắt Confirm email/);
   assert.equal(requests.length,1);
   const request = requests[0];
   assert.equal(new URL(request.url).pathname,'/auth/v1/signup');
@@ -61,7 +60,7 @@ test('SDK thật gửi POST signup đến Auth cùng metadata và URL xác nhậ
   assert.equal(body.email,'customer@example.test');
   assert.equal(body.password,input.password);
   assert.deepEqual(body.data,{full_name:input.full_name,phone:input.phone});
-  assert.equal(new URL(request.url).searchParams.get('redirect_to'),`${origin}/login`);
+  assert.equal(new URL(request.url).searchParams.has('redirect_to'),false);
 });
 test('Đăng ký có session thì đọc hồ sơ thật và chuyển đúng không gian', async () => {
   const f=fixture(); f.state.session={user};
@@ -126,7 +125,7 @@ test('Cập nhật hồ sơ chỉ ghi ba cột cho user hiện tại', async () 
   assert.ok(f.calls.some(c=>c[0]==='eq' && c[1]==='id' && c[2]===user.id));
 });
 test('URL/key mẫu hoặc secret key bị chặn trước khi tạo client', () => {
-  const modulePath=requireConfig.resolve('../../.next/auth-tests/views/api/supabase-client.js');
+  const modulePath=requireConfig.resolve('../../build/auth-tests/views/api/supabase-client.js');
   const keys=['NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY','NEXT_PUBLIC_SUPABASE_ANON_KEY'];
   const previous=keys.map(k=>process.env[k]);
   function config(url,key) {
@@ -141,6 +140,37 @@ test('URL/key mẫu hoặc secret key bị chặn trước khi tạo client', ()
     assert.throws(()=>config('https://real-project.supabase.co','sb_secret_wrong').getSupabaseClient(),/Publishable key/);
     assert.throws(()=>config('invalid','sb_publishable_test').getSupabaseClient(),/URL hợp lệ/);
   } finally {
+    keys.forEach((key,i)=>previous[i]===undefined ? delete process.env[key] : process.env[key]=previous[i]);
+    delete requireConfig.cache[modulePath];
+  }
+});
+
+test('Kiểm tra trước đăng ký: Confirm email bật thì chặn, tắt mới cho tiếp tục', async () => {
+  const modulePath=requireConfig.resolve('../../build/auth-tests/views/api/supabase-client.js');
+  const keys=['NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY','NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+  const previous=keys.map(key=>process.env[key]);
+  const originalFetch=globalThis.fetch;
+  let autoconfirm=false;
+  let requestedPath='';
+  try {
+    process.env.NEXT_PUBLIC_SUPABASE_URL='https://auth-test.example.invalid';
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY='sb_publishable_test_key';
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    globalThis.fetch=async (url,options)=>{
+      requestedPath=new URL(url).pathname;
+      assert.equal(options.headers.apikey,'sb_publishable_test_key');
+      return new Response(JSON.stringify({mailer_autoconfirm:autoconfirm}),{
+        status:200,headers:{'Content-Type':'application/json'},
+      });
+    };
+    delete requireConfig.cache[modulePath];
+    const {checkSignupSettings}=requireConfig(modulePath);
+    await assert.rejects(()=>checkSignupSettings(),/Project đang bật Confirm email/);
+    assert.equal(requestedPath,'/auth/v1/settings');
+    autoconfirm=true;
+    await checkSignupSettings();
+  } finally {
+    globalThis.fetch=originalFetch;
     keys.forEach((key,i)=>previous[i]===undefined ? delete process.env[key] : process.env[key]=previous[i]);
     delete requireConfig.cache[modulePath];
   }

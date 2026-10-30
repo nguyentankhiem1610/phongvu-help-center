@@ -23,7 +23,9 @@ Copy-Item .env.example .env.local
 
 `.env.example` được lưu trên Git; `.env.local` được bỏ qua. Thay cả hai giá trị mẫu bằng thông tin thật. Cấu hình thiếu/sai hoặc còn `your-project`/`your_key` sẽ hiển thị lỗi, không tạo tài khoản mẫu.
 
-Trong **Authentication → URL Configuration**, đặt Site URL đúng địa chỉ ứng dụng và thêm `http://localhost:3000/login`, `http://localhost:3000/reset-password` vào Redirect URLs. Khi deploy, thêm các URL tương ứng của website.
+Trong **Authentication → Sign In / Providers → Email**, tắt **Confirm email** rồi lưu. Ứng dụng dùng đăng ký email/mật khẩu không xác nhận thư. Trước khi đăng ký, ứng dụng kiểm tra thiết lập này; nếu vẫn bật thì báo lỗi và chưa gọi `signUp`, tránh gửi thư ngoài ý muốn.
+
+Trong **Authentication → URL Configuration**, đặt Site URL đúng địa chỉ ứng dụng và thêm `http://localhost:3000/reset-password` vào Redirect URLs nếu dùng chức năng quên mật khẩu. Khi deploy, thêm URL tương ứng của website.
 
 ## Đăng ký và đăng nhập Supabase
 
@@ -31,8 +33,8 @@ Khi có biến môi trường Supabase, ứng dụng gọi `supabase.auth.signUp
 
 1. Chạy `supabase/setup.sql` trên database mới theo hướng dẫn bên dưới. Nếu đã chạy, không chạy lại script khởi tạo.
 2. Điền cấu hình thật trong `.env.local`, khởi động lại dev server.
-3. Đăng ký bằng email có thể nhận thư. Tài khoản được tạo ở **Authentication → Users**; trigger trong `setup.sql` tạo hồ sơ tương ứng ở **Table Editor → public.users**.
-4. Nếu project bật xác nhận email, xác nhận thư trước khi đăng nhập. Nếu project không yêu cầu xác nhận, ứng dụng nhận phiên ngay sau đăng ký. Đây là hành vi của [Supabase password Auth](https://supabase.com/docs/guides/auth/passwords).
+3. Đăng ký bằng email đúng định dạng và mật khẩu. Tài khoản được tạo ở **Authentication → Users**; trigger trong `setup.sql` tạo hồ sơ tương ứng ở **Table Editor → public.users**.
+4. Khi **Confirm email** tắt, ứng dụng nhận phiên và đăng nhập ngay sau khi tạo tài khoản; không có bước mở thư hay nhập OTP. Thiết lập này nằm ở project, không phải một biến `.env`. Xem [Supabase password Auth](https://supabase.com/docs/guides/auth/passwords).
 5. Cấp Manager/Technician qua SQL Editor theo `supabase/README.md`, không cho người đăng ký tự chọn quyền.
 
 Tài khoản đã “tạo” ở phiên bản xem giao diện trước đây không được lưu và không có mật khẩu thật; cần đăng ký lại sau khi kết nối. Nếu Supabase báo lỗi trigger tạo user, xem Auth Logs và kiểm tra schema đã được khởi tạo đúng project.
