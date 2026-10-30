@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Phong Vũ Help Center
 
-## Getting Started
+Giao diện từ `phongvu-frontend-2026-10-30.zip` được tích hợp vào dự án Next.js hiện tại, sử dụng React, TypeScript, CSS và ảnh/logo/font cục bộ.
 
-First, run the development server:
+## Chạy dự án
 
-```bash
+```sh
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở http://localhost:3000. Không cần cấu hình `.env` hay tài khoản thật. Thanh chọn vai trò ở cuối màn hình cho phép xem giao diện công khai, khách hàng, Admin, kỹ thuật viên và hồ sơ kỹ thuật viên.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Các màn hình
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Trang chủ, danh sách dịch vụ, đăng nhập/đăng ký và khôi phục mật khẩu.
+- Khách hàng: đặt lịch, lịch hẹn, theo dõi sửa chữa và hồ sơ cá nhân.
+- Admin: tổng quan, lịch hẹn, phiếu sửa chữa, linh kiện và duyệt kỹ thuật viên.
+- Kỹ thuật viên: tổng quan công việc, việc được giao, chi tiết thiết bị, nhật ký và báo giá.
 
-## Learn More
+Đây là bản frontend dùng dữ liệu mẫu. Đăng nhập chỉ chuyển vai trò xem thử; các thao tác nghiệp vụ chưa lưu dữ liệu và chưa kết nối backend. Việc chọn vai trò không phải cơ chế xác thực hay phân quyền bảo mật.
 
-To learn more about Next.js, take a look at the following resources:
+## Cấu trúc
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```text
+app/                 Route, layout và CSS
+views/pages/         Các màn hình
+views/components/    Thành phần giao diện và provider dữ liệu mẫu
+views/presenters/    Nhãn và định dạng
+views/preview/       Dữ liệu mẫu
+views/api/           Adapter để tích hợp backend sau
+ types/              Kiểu dữ liệu
+public/              Ảnh, SVG, font và giấy phép font
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Để kết nối backend, thay phần dữ liệu và hành động trong `views/components/app-provider.tsx` và adapter `views/api/service-client.ts`.
 
-## Deploy on Vercel
+## Kiểm tra
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```sh
+npm run lint
+npm run typecheck
+npm run build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Dự án học phần mô phỏng, không phải website chính thức của Phong Vũ.
