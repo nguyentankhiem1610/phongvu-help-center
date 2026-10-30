@@ -23,7 +23,13 @@ Copy-Item .env.example .env.local
 
 `.env.example` được lưu trên Git; `.env.local` được bỏ qua. Thay cả hai giá trị mẫu bằng thông tin thật. Cấu hình thiếu/sai hoặc còn `your-project`/`your_key` sẽ hiển thị lỗi, không tạo tài khoản mẫu.
 
-Trong **Authentication → Sign In / Providers → Email**, tắt **Confirm email** rồi lưu. Ứng dụng dùng đăng ký email/mật khẩu không xác nhận thư. Trước khi đăng ký, ứng dụng kiểm tra thiết lập này; nếu vẫn bật thì báo lỗi và chưa gọi `signUp`, tránh gửi thư ngoài ý muốn.
+Trong **Authentication → Sign In / Providers**, cấu hình:
+
+- **Allow new users to sign up: ON** — cho phép tạo tài khoản mới.
+- Trong **Email**, đặt **Enable Email provider: ON** — cho phép dùng email/mật khẩu.
+- **Confirm email: OFF** — bỏ bước xác nhận thư, rồi lưu.
+
+Hai mục Email provider và Confirm email có chức năng khác nhau: tắt Email provider sẽ gây lỗi `Email signups are disabled`, không phải chỉ bỏ xác nhận thư. Trước khi đăng ký, ứng dụng kiểm tra cả ba thiết lập và báo đúng mục cần chỉnh trước khi gọi `signUp`. Xem [cấu hình Auth của Supabase](https://supabase.com/docs/guides/auth/general-configuration).
 
 Trong **Authentication → URL Configuration**, đặt Site URL đúng địa chỉ ứng dụng và thêm `http://localhost:3000/reset-password` vào Redirect URLs nếu dùng chức năng quên mật khẩu. Khi deploy, thêm URL tương ứng của website.
 

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { createClient } from '@supabase/supabase-js';
-import { performAuthAction, loadProfile } from '../../build/auth-tests/views/api/auth-actions.js';
+import { authError, performAuthAction, loadProfile } from '../../build/auth-tests/views/api/auth-actions.js';
 const requireConfig = createRequire(import.meta.url);
 
 const user = { id: '11111111-1111-4111-8111-111111111111', email: 'customer@example.test', user_metadata: {} };
@@ -76,7 +76,7 @@ test('Đăng ký sai dữ liệu không gọi SDK và không thông báo thành 
 });
 test('Supabase từ chối đăng ký thì truyền lỗi và không tạo session giả', async () => {
   const f=fixture(); f.state.authError={code:'signup_disabled',message:'Signups disabled'};
-  await assert.rejects(()=>performAuthAction(f.client,'register',input,origin),/đang tắt đăng ký/);
+  await assert.rejects(()=>performAuthAction(f.client,'register',input,origin),/Allow new users to sign up/);
 });
 test('Sai mật khẩu hiển thị lỗi; không fallback tài khoản demo', async () => {
   const f=fixture(); f.state.authError={code:'invalid_credentials'};
@@ -151,6 +151,8 @@ test('Kiểm tra trước đăng ký: Confirm email bật thì chặn, tắt m�
   const previous=keys.map(key=>process.env[key]);
   const originalFetch=globalThis.fetch;
   let autoconfirm=false;
+  let emailEnabled=true;
+  let signupsDisabled=false;
   let requestedPath='';
   try {
     process.env.NEXT_PUBLIC_SUPABASE_URL='https://auth-test.example.invalid';
@@ -159,7 +161,8 @@ test('Kiểm tra trước đăng ký: Confirm email bật thì chặn, tắt m�
     globalThis.fetch=async (url,options)=>{
       requestedPath=new URL(url).pathname;
       assert.equal(options.headers.apikey,'sb_publishable_test_key');
-      return new Response(JSON.stringify({mailer_autoconfirm:autoconfirm}),{
+      return new Response(JSON.stringify({mailer_autoconfirm:autoconfirm,
+        external:{email:emailEnabled},disable_signup:signupsDisabled}),{
         status:200,headers:{'Content-Type':'application/json'},
       });
     };
@@ -169,9 +172,22 @@ test('Kiểm tra trước đăng ký: Confirm email bật thì chặn, tắt m�
     assert.equal(requestedPath,'/auth/v1/settings');
     autoconfirm=true;
     await checkSignupSettings();
+    emailEnabled=false;
+    await assert.rejects(()=>checkSignupSettings(),/Bật Enable Email provider/);
+    emailEnabled=true;
+    signupsDisabled=true;
+    await assert.rejects(()=>checkSignupSettings(),/Allow new users to sign up/);
   } finally {
     globalThis.fetch=originalFetch;
     keys.forEach((key,i)=>previous[i]===undefined ? delete process.env[key] : process.env[key]=previous[i]);
     delete requireConfig.cache[modulePath];
+  }
+});
+
+test('Thông báo Email signups are disabled chỉ đúng Email provider, không yêu cầu bật xác nhận', () => {
+  for (const error of [{code:'email_provider_disabled'}, {message:'Email signups are disabled'}]) {
+    const message=authError(error).message;
+    assert.match(message,/Bật Enable Email provider/);
+    assert.match(message,/giữ Confirm email tắt/);
   }
 });

@@ -42,6 +42,12 @@ export async function checkSignupSettings(): Promise<void> {
   });
   if (!response.ok) throw new Error("Không đọc được cấu hình đăng ký Supabase. Kiểm tra Project URL và Publishable key.");
   const settings = await response.json();
+  if (settings.external?.email !== true) {
+    throw new Error("Email provider đang tắt. Bật Enable Email provider trong Supabase → Authentication → Sign In / Providers → Email, giữ Confirm email tắt rồi lưu.");
+  }
+  if (settings.disable_signup === true) {
+    throw new Error("Project đang tắt đăng ký mới. Bật Allow new users to sign up trong Supabase → Authentication → Sign In / Providers.");
+  }
   if (settings.mailer_autoconfirm !== true) {
     throw new Error("Project đang bật Confirm email. Tắt tại Supabase → Authentication → Sign In / Providers → Email → Confirm email, lưu rồi đăng ký lại.");
   }

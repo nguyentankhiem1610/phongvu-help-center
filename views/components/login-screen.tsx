@@ -102,7 +102,7 @@ function LoginForm({
             ? "Admin điều phối dịch vụ, kỹ thuật viên xử lý công việc được giao. Dùng tài khoản do chủ hệ thống cấp."
             : "Tạo tài khoản bằng email và mật khẩu để theo dõi quá trình chăm sóc thiết bị của bạn."}
         </p>
-        <Image src="/laptop-care.svg" alt="Laptop được chăm sóc" width={700} height={480} style={{ height: "auto" }} priority />
+        <Image src="/laptop-care.svg" alt="Laptop được chăm sóc" width={700} height={480} style={{ height: "auto" }} loading="eager" />
         <div>
           <ShieldCheck size={20} /> Thông tin lịch hẹn chỉ hiển thị theo quyền
           truy cập.

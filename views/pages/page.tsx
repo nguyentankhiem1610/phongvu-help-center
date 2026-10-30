@@ -84,6 +84,7 @@ export default function Home() {
           <Image
             className="hero-art"
             src="/laptop-care.svg"
+            loading="eager"
             width={700}
             height={480}
             alt="Laptop được kiểm tra và bảo dưỡng, sẵn sàng hoạt động"

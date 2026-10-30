@@ -9,12 +9,16 @@ export function authError(error: unknown): Error {
     email_not_confirmed: "Tài khoản chưa được xác nhận trên Supabase. Quản lý cần kiểm tra Confirm email và trạng thái tài khoản trong Authentication → Users.",
     user_already_exists: "Email đã đăng ký. Hãy đăng nhập hoặc khôi phục mật khẩu.",
     weak_password: "Mật khẩu chưa đáp ứng yêu cầu của Supabase.",
-    signup_disabled: "Project Supabase đang tắt đăng ký tài khoản mới.",
+    signup_disabled: "Project đang tắt đăng ký mới. Bật Allow new users to sign up trong Supabase → Authentication → Sign In / Providers.",
+    email_provider_disabled: "Email provider đang tắt. Bật Enable Email provider trong Supabase → Authentication → Sign In / Providers → Email, giữ Confirm email tắt rồi lưu.",
     over_email_send_rate_limit: "Supabase đang giới hạn gửi email. Vui lòng thử lại sau.",
     email_address_invalid: "Supabase từ chối địa chỉ email này. Kiểm tra định dạng hoặc dùng địa chỉ email khác.",
     unexpected_failure: "Supabase không tạo được tài khoản. Kiểm tra Auth Logs và trigger tạo public.users.",
   };
   if (value.code && messages[value.code]) return new Error(messages[value.code]);
+  if (/email signups are disabled/i.test(value.message || "")) {
+    return new Error(messages.email_provider_disabled);
+  }
   if (/fetch|network/i.test(value.message || "")) {
     return new Error("Không kết nối được Supabase. Kiểm tra Project URL và kết nối mạng.");
   }
