@@ -1,6 +1,5 @@
 # Phong Vũ Help Center
 
-Giao diện từ `phongvu-frontend-2026-10-30.zip` được tích hợp vào dự án Next.js hiện tại, sử dụng React, TypeScript, CSS và ảnh/logo/font cục bộ.
 
 ## Chạy dự án
 
